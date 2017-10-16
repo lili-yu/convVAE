@@ -32,7 +32,7 @@ class VaeEncoder(nn.Module):
         if rnn_type == "SRU":
             # SRU doesn't support PackedSequence.
             self.no_pack_padded_seq = True
-            self.rnn = onmt.modules.SRU(
+            self.rnn = onmt.SRU(
                     input_size=embeddings.embedding_size,
                     hidden_size=hidden_size,
                     num_layers=num_layers,
@@ -225,7 +225,7 @@ class RNNDecoder(nn.Module):
         """
         # Use pytorch version when available.
         if rnn_type == "SRU":
-            return onmt.modules.SRU(
+            return onmt.SRU(
                     input_size, hidden_size,
                     num_layers=num_layers,
                     dropout=dropout)

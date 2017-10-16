@@ -6,10 +6,9 @@ import torch.nn as nn
 
 import onmt
 import onmt.Models
-import onmt.modules
 from onmt.IO import ONMTDataset
 from onmt.Modelsvae import VaeModel, VaeEncoder, RNNDecoder, Generator
-from onmt.modules import Embeddings
+import Embeddings
 
 
 def make_embeddings(opt, word_dict, feature_dicts, for_encoder=True):
