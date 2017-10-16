@@ -9,7 +9,6 @@ from torch import cuda
 import onmt
 import onmt.Models
 import onmt.ModelConstructor
-import onmt.modules
 from onmt.Utils import aeq, use_gpu
 import opts
 

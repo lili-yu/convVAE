@@ -8,7 +8,7 @@ import onmt
 import onmt.Models
 from onmt.IO import ONMTDataset
 from onmt.Modelsvae import VaeModel, VaeEncoder, RNNDecoder, Generator
-import Embeddings
+from onmt.Embeddings import Embeddings
 
 
 def make_embeddings(opt, word_dict, feature_dicts, for_encoder=True):

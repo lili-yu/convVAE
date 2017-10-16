@@ -13,17 +13,17 @@ can_use_sru = check_sru_requirement()
 if can_use_sru:
     from onmt.SRU import SRU
 
-    
+from onmt.UtilClass import LayerNorm, Bottle, BottleLinear, \
+    BottleLayerNorm, BottleSoftmax, Elementwise
+from onmt.StackedRNN import StackedLSTM, StackedGRU
+from onmt.Embeddings import Embeddings    
 
 # For flake8 compatibility
 __all__ = [onmt.Loss, onmt.IO, VaeTrainer, Translator,
            Optim, Beam, Statistics, Embeddings, Elementwise,StackedLSTM, StackedGRU]
 
 
-from onmt.UtilClass import LayerNorm, Bottle, BottleLinear, \
-    BottleLayerNorm, BottleSoftmax, Elementwise
-from onmt.StackedRNN import StackedLSTM, StackedGRU
-from onmt.Embeddings import Embeddings
+
 
 
 
