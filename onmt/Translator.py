@@ -3,7 +3,7 @@ from torch.autograd import Variable
 
 
 import onmt
-import onmt.Models
+import onmt.Modelsvae
 import onmt.ModelConstructor
 import onmt.IO
 from onmt.Utils import use_gpu

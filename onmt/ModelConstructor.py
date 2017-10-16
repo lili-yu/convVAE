@@ -5,7 +5,7 @@ and creates each encoder and decoder accordingly.
 import torch.nn as nn
 
 import onmt
-import onmt.Models
+import onmt.Modelsvae
 from onmt.IO import ONMTDataset
 from onmt.Modelsvae import VaeModel, VaeEncoder, RNNDecoder, Generator
 from onmt.Embeddings import Embeddings

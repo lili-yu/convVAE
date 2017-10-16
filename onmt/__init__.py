@@ -1,5 +1,5 @@
 import onmt.IO
-import onmt.Models
+import onmt.Modelsvae
 import onmt.Loss
 from onmt.VaeTrainer import VaeTrainer, Statistics
 from onmt.Translator import Translator
@@ -21,12 +21,6 @@ from onmt.Embeddings import Embeddings
 # For flake8 compatibility
 __all__ = [onmt.Loss, onmt.IO, VaeTrainer, Translator,
            Optim, Beam, Statistics, Embeddings, Elementwise,StackedLSTM, StackedGRU]
-
-
-
-
-
-
 
 
 if can_use_sru:

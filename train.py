@@ -7,7 +7,7 @@ import torch.nn as nn
 from torch import cuda
 
 import onmt
-import onmt.Models
+import onmt.Modelsvae
 import onmt.ModelConstructor
 from onmt.Utils import aeq, use_gpu
 import opts
