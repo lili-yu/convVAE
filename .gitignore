@@ -4,7 +4,8 @@ __pycache__/
 *$py.class
 */*/*.pyc
 data/*
-
+*.DS_Store
+*/*.DS_Store
 *.txt
 
 # C extensions
