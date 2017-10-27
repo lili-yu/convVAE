@@ -99,8 +99,8 @@ class VaeLossCompute(LossComputeBase):
         self.criterion = nn.NLLLoss(weight, size_average=False)
         
         self.encoder = encoder
-        self.kld_weight =  0.05 #0.05
-        self.kld_start_inc = 15 #10000
+        self.kld_weight =  0.1 #0.05
+        self.kld_start_inc = 5 #10000
         self.kld_max = 0.5
         self.kld_inc = 0.05
         #temperature = 0.9
@@ -114,7 +114,6 @@ class VaeLossCompute(LossComputeBase):
         scores = self.generator(self.bottle(output))
         scores_data = scores.data.clone()
 
-        
         target = target.view(-1)
         target_data = target.data.clone()
 

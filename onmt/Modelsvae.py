@@ -128,6 +128,7 @@ class RNNDecoder(nn.Module):
         self.hidden_size = hidden_size
         self.embeddings = embeddings
         self.dropout = nn.Dropout(dropout)
+        self.worddropout = nn.Dropout(dropout)
 
         # Build the RNN.
         self.rnn = self._build_rnn(rnn_type, self._input_size, hidden_size,
@@ -161,14 +162,15 @@ class RNNDecoder(nn.Module):
 
         # Run the forward pass of the RNN.
         outputs = []
-
+        '''
         input = input.type(torch.cuda.FloatTensor)
         mask = input.ge(0.3).type(torch.cuda.FloatTensor)
         input = input *mask
-
         input = input.type(torch.cuda.LongTensor)
-  
+        '''
+
         emb = self.embeddings(input)
+        emb = self.worddropout(emb)
         #print(emb.size())
 
         #h0 = self._fix_enc_hidden(state.hidden[0])
