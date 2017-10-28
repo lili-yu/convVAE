@@ -51,7 +51,7 @@ torch.manual_seed(opt.seed)
 
 def main():
     print('Preparing training ...')
-    with codecs.open(opt.train_src, "r", "utf-8") as src_file:
+IHwith codecs.open(opt.train_src, "r", "utf-8") as src_file:
         src_line = src_file.readline().strip().split()
         _, _, nFeatures = onmt.IO.extract_features(src_line)
 
