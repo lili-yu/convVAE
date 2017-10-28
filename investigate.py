@@ -83,19 +83,19 @@ def main():
     opts.model_opts(dummy_parser)
     dummy_opt = dummy_parser.parse_known_args([])[0]
 
-    opt.cuda =  gopt.gpu > -1
+    opt.cuda =  opt.gpu > -1
     if opt.cuda:
         torch.cuda.set_device(opt.gpu)
     #translator = onmt.Translator(opt, dummy_opt.__dict__)
-    invistigator = onmt.Invistigator(opt, dummy_opt.__dict__)
+    investigator = onmt.Investigator(opt, dummy_opt.__dict__)
 
     out_file = codecs.open(opt.output, 'w', 'utf-8')
-    pred_score_total, pred_words_total = 0, 043w 
+    pred_score_total, pred_words_total = 0, 0
     gold_score_total, gold_words_total = 0, 0
     if opt.dump_beam != "":
         import json
         invistigator.initBeamAccum()
-    data = onmt.IO.ONMTDataset(opt.src, opt.tgt, translator.fields, None)
+    data = onmt.IO.ONMTDataset(opt.src, opt.tgt, investigator.fields, None)
 
     test_data = onmt.IO.OrderedIterator(
         dataset=data, device=opt.gpu,
@@ -104,8 +104,8 @@ def main():
 
     counter = count(1)
     for batch in test_data:
-        pred_batch, gold_batch, pred_scores,  src \
-            = invistigator.invistigate(batch, data)
+        pred_batch, gold_batch, pred_scores, src\
+            = investigator.investigate(batch, data)
 
         pred_score_total += sum(score[0] for score in pred_scores)
         pred_words_total += sum(len(x[0]) for x in pred_batch)
@@ -118,12 +118,41 @@ def main():
                 pred_batch, gold_batch,
                 pred_scores, 
                 (sent.squeeze(1) for sent in src.split(1, dim=1)))
- src_sent in z_batch:
+
+        for pred_sents, gold_sent, pred_score, src_sent in z_batch:
             n_best_preds = [" ".join(pred) for pred in pred_sents[:opt.n_best]]
             out_file.write('\n'.join(n_best_preds))
             out_file.write('\n')
             out_file.flush()
 
+
+            '''
+            if opt.verbose:
+                sent_number = next(counter)
+                words = get_src_words(
+                    src_sent, investigator.fields["src"].vocab.itos)
+
+                os.write(1, bytes('\nSENT %d: %s\n' %
+                                  (sent_number, words), 'UTF-8'))
+
+                best_pred = n_best_preds[0]
+                best_score = pred_score[0]
+                os.write(1, bytes('PRED %d: %s\n' %
+                                  (sent_number, best_pred), 'UTF-8'))
+                print("PRED SCORE: %.4f" % best_score)
+
+                if opt.tgt:
+                    tgt_sent = ' '.join(gold_sent)
+                    os.write(1, bytes('GOLD %d: %s\n' %
+                             (sent_number, tgt_sent), 'UTF-8'))
+                    print("GOLD SCORE: %.4f" % gold_score)
+
+                if len(n_best_preds) > 1:
+                    print('\nBEST HYP:')
+                    for score, sent in zip(pred_score, n_best_preds):
+                        os.write(1, bytes("[%.4f] %s\n" % (score, sent),
+                                 'UTF-8'))
+            '''
             
     report_score('PRED', pred_score_total, pred_words_total)
     

@@ -9,7 +9,7 @@ import onmt.IO
 from onmt.Utils import use_gpu
 
 
-class Invistigator(object):
+class Investigator(object):
     def __init__(self, opt, dummy_opt={}):
         # Add in default model arguments, possibly added since training.
         self.opt = opt
@@ -40,7 +40,7 @@ class Invistigator(object):
             "scores": [],
             "log_probs": []}
 
-    def buildTargetTokens(self, pred, src, copy_vocab): #attn, copy_vocab):
+    def buildTargetTokens(self, pred, copy_vocab): #attn, copy_vocab):
         vocab = self.fields["tgt"].vocab
         tokens = []
         for tok in pred:
@@ -48,6 +48,7 @@ class Invistigator(object):
                 tokens.append(vocab.itos[tok])
             else:
                 tokens.append(copy_vocab.itos[tok - len(vocab)])
+                print('using copy vacab')
             if tokens[-1] == onmt.IO.EOS_WORD:
                 tokens = tokens[:-1]
                 break
@@ -96,7 +97,7 @@ class Invistigator(object):
             goldScores += scores
         return goldScores
 
-    def InvBatch(self, batch, dataset):
+    def InvBatch(self, batch, dataset, step):
         beam_size = self.opt.beam_size
         batch_size = batch.batch_size
 
@@ -105,8 +106,9 @@ class Invistigator(object):
         src = onmt.IO.make_features(batch, 'src')
 
         #context, z,  mu, logvar = self.model.encoder(src, src_lengths)
-        context, z = self.model.encoder.manip(src, steps =5)
-        batch_size *= steps
+        context, z = self.model.encoder.manip(src, steps =step)
+        batch_size *= step
+
 
         #enc_z = self.z2h(z)
         enc_z = self.model.z2h(z).unsqueeze(0).repeat(self.model.n_layers, 1, 1)
@@ -206,32 +208,45 @@ class Invistigator(object):
 
         return allHyps, allScores,  allGold #all Gold is wrong
 
-    def Invistigat(self, batch, data):
+    def investigate(self, batch, data):
         #  (1) convert words to indexes
         batch_size = batch.batch_size
+        step = 5
+        batch_size *= step
 
         #  (2) translate
-        pred, predScore, goldScore = self.InvBatch(batch, data) ##################
+        pred, predScore, goldScore = self.InvBatch(batch, data, step) ##################
 
         #assert(len(goldScore) == len(pred))
-        pred, predScore,  i = list(zip(
-            *sorted(zip(pred, predScore, 
+        oldinds = batch.indices.data
+
+        newi = [[x]*step for x in oldinds]
+        inds = [x  for r in newi for x in r]
+        inds = torch.LongTensor(inds)
+
+
+        '''
+        assert(len(goldScore) == len(pred))
+        pred, predScore, goldScore, i = list(zip(
+            *sorted(zip(pred, predScore, goldScore,
                         batch.indices.data),
                     key=lambda x: x[-1])))
         inds, perm = torch.sort(batch.indices.data)
+        '''
 
         #  (3) convert indexes to words
         predBatch, goldBatch = [], []
-        src = batch.src[0].data.index_select(1, perm)
+        #src = batch.src[0].data.index_select(1, inds)
+        src = batch.src[0].data
         if self.opt.tgt:
             tgt = batch.tgt.data.index_select(1, perm)
-        for b in range(pred.size()[0]):#(batch_size):
+        for b in range(batch_size):
             src_vocab = data.src_vocabs[inds[b]]
             predBatch.append(
-                [self.buildTargetTokens(pred[b][n], src[:, b], src_vocab)    ###############
+                [self.buildTargetTokens(pred[b][n], src_vocab)    ###############
                  for n in range(self.opt.n_best)])
             if self.opt.tgt:
                 goldBatch.append(
                     self.buildTargetTokens(tgt[1:, b], src[:, b],
                                            None, None))
-        return predBatch, goldBatch, predScore,  src
+        return predBatch, goldBatch, predScore, src

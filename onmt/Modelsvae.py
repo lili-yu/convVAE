@@ -102,7 +102,7 @@ class VaeEncoder(nn.Module):
             outputs (FloatTensor):  len x batch x rnn_size -  Memory bank
         """
         """ See EncoderBase.forward() for description of args and returns."""
-        self._check_args(input, lengths, hidden)
+        lengths = None
 
         emb = self.embeddings(input)
         s_len, batch, emb_dim = emb.size()
@@ -129,15 +129,16 @@ class VaeEncoder(nn.Module):
         #z = self.sample(mu, logvar)  #batch, z_size
         z = self.controlled_change(mu, steps) 
 
-        for k in range(steps):
-            outputs = torch.cat((outputs, outputs),1)
+        output0 = outputs
+        for k in range(steps-1):
+            outputs = torch.cat((outputs, output0),1)
 
         return outputs, z
 
     def controlled_change(self, mu, steps):
         # want to change z linearly from one point to the other point
         # after this the batchsize  will populate more. 
-        mu = mu.transpose(0,1)
+        #mu = mu.transpose(0,1)
         z = None
         for i in range(mu.size()[0]):
             for j in range(steps):
@@ -150,9 +151,7 @@ class VaeEncoder(nn.Module):
                     z = newz
                 else:
                     z = torch.cat((z,newz),0)  
-        z = torch.cat((z,newz),0) 
-        return z.transpose(0,1)
-
+        return z
 
 
     def sample(self, mu, logvar):
