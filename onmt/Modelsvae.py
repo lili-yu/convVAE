@@ -90,6 +90,71 @@ class VaeEncoder(nn.Module):
         #return mu, logvar, z, hidden_t, outputs
         return outputs, z,  mu, logvar
 
+    def manip(self, input, steps, hidden=None):
+        """
+        Args:
+            input (LongTensor): len x batch x nfeat.
+            lengths (LongTensor): batch
+            hidden: Initial hidden state.
+        Returns:
+            hidden_t (Variable): Pair of layers x batch x rnn_size - final
+                                    encoder state
+            outputs (FloatTensor):  len x batch x rnn_size -  Memory bank
+        """
+        """ See EncoderBase.forward() for description of args and returns."""
+        self._check_args(input, lengths, hidden)
+
+        emb = self.embeddings(input)
+        s_len, batch, emb_dim = emb.size()
+
+        packed_emb = emb
+        if lengths is not None and not self.no_pack_padded_seq:
+            # Lengths data is wrapped inside a Variable.
+            lengths = lengths.view(-1).tolist()
+            packed_emb = pack(emb, lengths)
+
+        outputs, hidden_t = self.rnn(packed_emb, hidden)
+
+        if lengths is not None and not self.no_pack_padded_seq:
+            outputs = unpack(outputs)[0]
+
+        #new_h = [torch.cat([hidden_t[i][0:h.size(0):2], hidden_t[i][1:h.size(0):2]], 2) for i in range(len(hidden_t))]
+        hh = hidden_t[0] #in LSTM, hidden_t[0] is hidden states, while hidden_t[1] is cell states
+        #hh.size(), num_layers * num_directions, batch, hidden_size
+        hhh = torch.mean(hh,0)  # batch, hidden_size
+
+
+        ps = self.h2z(hhh)   # batch, 2*z_size
+        mu, logvar = torch.chunk(ps, 2, dim=1)
+        #z = self.sample(mu, logvar)  #batch, z_size
+        z = self.controlled_change(mu, steps) 
+
+        for k in range(steps):
+            outputs = torch.cat((outputs, outputs),1)
+
+        return outputs, z
+
+    def controlled_change(self, mu, steps):
+        # want to change z linearly from one point to the other point
+        # after this the batchsize  will populate more. 
+        mu = mu.transpose(0,1)
+        z = None
+        for i in range(mu.size()[0]):
+            for j in range(steps):
+                if i==mu.size()[0]-1:
+                    newz = mu[i]
+                else:
+                    newz = mu[i] + j/steps*mu[i+1]
+                newz = newz.unsqueeze(0)
+                if(z is None):
+                    z = newz
+                else:
+                    z = torch.cat((z,newz),0)  
+        z = torch.cat((z,newz),0) 
+        return z.transpose(0,1)
+
+
+
     def sample(self, mu, logvar):
         #print(mu.size())
         #print(logvar.size())
@@ -314,6 +379,7 @@ class RNNDecoderState(DecoderState):
 
 
 
+################################################# Generator #################################################
 class Generator(nn.Module):
     def __init__(self, input_size, hidden_size ):
         super(Generator, self).__init__()

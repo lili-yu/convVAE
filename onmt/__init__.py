@@ -3,6 +3,7 @@ import onmt.Modelsvae
 import onmt.Loss
 from onmt.VaeTrainer import VaeTrainer, Statistics
 from onmt.Translator import Translator
+from onmt.Investigator import Investigator
 
 
 from onmt.Optim import Optim
@@ -19,7 +20,7 @@ from onmt.StackedRNN import StackedLSTM, StackedGRU
 from onmt.Embeddings import Embeddings    
 
 # For flake8 compatibility
-__all__ = [onmt.Loss, onmt.IO, VaeTrainer, Translator,
+__all__ = [onmt.Loss, onmt.IO, VaeTrainer, Translator, Investigator,
            Optim, Beam, Statistics, Embeddings, Elementwise,StackedLSTM, StackedGRU]
 
 
